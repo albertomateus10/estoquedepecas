@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Estoque de Peças</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>Estoque de Peças</h1>
+        </div>
+
+
+        <div id="alertError" class="alert error"><span class="msg"></span><span class="close"
+                onclick="this.parentElement.classList.remove('show')">✕</span></div>
+        <div id="alertWarn" class="alert warn"><span class="msg"></span><span class="close"
+                onclick="this.parentElement.classList.remove('show')">✕</span></div>
+
+        <div class="controls-wrap">
+            <div class="search-box">
+                <input id="q" class="search-input" placeholder="Buscar por código, descrição ou grupo" />
+                <div class="file-input">
+                    <button class="file-btn"><i class="fa-solid fa-file-excel"></i> Selecionar arquivo</button>
+                    <input id="fileInput" type="file" accept=".xlsx,.xls,.csv" />
+                </div>
+                <span id="fileName" class="file-name"></span>
+            </div>
+            <button id="exportExcel" class="export-btn"><i class="fa-solid fa-file-export"></i> Exportar</button>
+            <button id="clearAll" class="clear-btn"><i class="fa-solid fa-eraser"></i> Limpar Filtros</button>
+        </div>
+
+        <div class="filters" id="filters"></div>
+
+        <div class="section">
+            <div id="kpiGroups" class="kpi-groups"></div>
+        </div>
+
+        <!-- GRÁFICOS -->
+        <div class="section">
+            <div class="charts">
+                <div class="chart" style="grid-column: span 2;"><canvas id="periodoChart"></canvas></div>
+                <div class="chart"><canvas id="modeloChart"></canvas></div>
+                <div class="chart"><canvas id="valorItemChart"></canvas></div>
+                <div class="chart"><canvas id="lojaChart"></canvas></div>
+                <div class="chart" style="grid-column: span 2;"><canvas id="agingChart"></canvas></div>
+                <div class="chart"><canvas id="faixasPrecoChart"></canvas></div>
+                <div class="chart"><canvas id="vendedorChart"></canvas></div>
+                <div class="chart"><canvas id="vendedorValorChart"></canvas></div>
+                <div class="chart"><canvas id="tipoOsChart"></canvas></div>
+                <div class="chart" style="grid-column: span 2;"><canvas id="vendasPorDiaChart"></canvas></div>
+            </div>
+        </div>
+
+        <div class="section table">
+            <table id="grid">
+                <thead>
+                    <tr>
+                        <th class="sortable" data-key="CodItem" data-type="text">Cód. Item <i
+                                class="fa-solid fa-sort sort"></i></th>
+                        <th class="sortable" data-key="Descricao" data-type="text">Descrição <i
+                                class="fa-solid fa-sort sort"></i></th>
+                        <th class="sortable" data-key="Quantidade" data-type="num">Qtd <i
+                                class="fa-solid fa-sort sort"></i></th>
+                        <th class="sortable" data-key="Giro" data-type="num">Giro <i class="fa-solid fa-sort sort"></i>
+                        </th>
+                        <th class="sortable" data-key="PrecoCusto" data-type="num">Preço Custo <i
+                                class="fa-solid fa-sort sort"></i></th>
+                        <th class="sortable" data-key="PrecoVenda" data-type="num">Preço Venda <i
+                                class="fa-solid fa-sort sort"></i></th>
+                        <th class="sortable" data-key="UltimaVenda" data-type="text">Últ. Venda <i
+                                class="fa-solid fa-sort sort"></i></th>
+                        <th class="sortable" data-key="UltimaCompra" data-type="text">Últ. Compra <i
+                                class="fa-solid fa-sort sort"></i></th>
+                        <th class="sortable" data-key="Grupo" data-type="text">Grupo/Classe <i
+                                class="fa-solid fa-sort sort"></i></th>
+                        <th class="sortable" data-key="Loja" data-type="text">Empresa <i
+                                class="fa-solid fa-sort sort"></i></th>
+                    </tr>
+                </thead>
+                <tbody></tbody>
+            </table>
+        </div>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2"></script>
+    <script src="script.js"></script>
+</body>
+
+</html>
