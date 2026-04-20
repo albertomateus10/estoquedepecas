@@ -196,7 +196,7 @@ const DOTACAO_CODES = [
 
 let allData = [];
 let filtered = [];
-const state = { search: '', Grupo: [], Giro: [], CodItem: [], Descricao: [], Aging: [], Loja: [], Dotacao: [], Acima500: [] };
+const state = { search: '', Grupo: [], Giro: [], CodItem: [], Descricao: [], Aging: [], Loja: [], Dotacao: [], Acima500: [], Reserva: [] };
 const sortState = { key: 'Quantidade', type: 'num', dir: 'desc' };
 let charts = { periodo: null, valorItem: null, loja: null, aging: null };
 
@@ -306,10 +306,11 @@ const pillInstances = {
     Loja: new MultiPill({ label: 'Empresa', getter: () => state.Loja, setter: v => state.Loja = v }),
     Dotacao: new MultiPill({ label: 'Dotação', getter: () => state.Dotacao, setter: v => state.Dotacao = v }),
     Acima500: new MultiPill({ label: 'Acima de R$ 500', getter: () => state.Acima500, setter: v => state.Acima500 = v }),
+    Reserva: new MultiPill({ label: 'Reserva', getter: () => state.Reserva, setter: v => state.Reserva = v }),
 };
 (function mountPills() {
     const holder = document.getElementById('filters');
-    ['Loja', 'CodItem', 'Grupo', 'Descricao', 'Dotacao', 'Acima500', 'Aging'].forEach(k => {
+    ['Loja', 'CodItem', 'Grupo', 'Descricao', 'Dotacao', 'Acima500', 'Reserva', 'Aging'].forEach(k => {
         if (pillInstances[k]) holder.appendChild(pillInstances[k].el);
     });
 })();
@@ -441,7 +442,8 @@ function parseRows(headers, data) {
             UltimaCompraDate: parseDateBR(get(idx.ultimaCompra)),
             Grupo: get(idx.grupo) ?? 'Outros',
             Loja: get(idx.loja) ?? 'Não informada',
-            ValorK: toNumberBR(get(idx.colunaK))
+            ValorK: toNumberBR(get(idx.colunaK)),
+            ValorReserva: toNumberBR(get(4))
         };
     });
 
@@ -459,6 +461,7 @@ function parseRows(headers, data) {
     ], { keepOrder: true });
     pillInstances.Dotacao.setOptions(['Sim', 'Não'], { keepOrder: true });
     pillInstances.Acima500.setOptions(['Sim', 'Não'], { keepOrder: true });
+    pillInstances.Reserva.setOptions(['Sim', 'Não'], { keepOrder: true });
 
     applyFilters();
 }
@@ -468,7 +471,7 @@ document.getElementById('q').addEventListener('input', e => { state.search = e.t
 document.getElementById('clearAll').addEventListener('click', () => {
     withStableScroll(() => {
         state.search = ''; document.getElementById('q').value = '';
-        state.Grupo = []; state.Giro = []; state.CodItem = []; state.Descricao = []; state.Loja = []; state.Aging = []; state.Dotacao = []; state.Acima500 = [];
+        state.Grupo = []; state.Giro = []; state.CodItem = []; state.Descricao = []; state.Loja = []; state.Aging = []; state.Dotacao = []; state.Acima500 = []; state.Reserva = [];
         Object.values(pillInstances).forEach(p => { p.setter([]); p.render(); p.sync(); });
         applyFilters();
     });
@@ -528,10 +531,17 @@ function applyFilters() {
             if (state.Acima500.includes("Não") && isAcima) acima500Ok = false;
         }
 
+        let reservaOk = true;
+        if (state.Reserva.length === 1) {
+            const isReserva = (r.ValorReserva > 0);
+            if (state.Reserva.includes("Sim") && !isReserva) reservaOk = false;
+            if (state.Reserva.includes("Não") && isReserva) reservaOk = false;
+        }
+
         const q = state.search;
         const qOk = !q || [r.Descricao, r.CodItem, r.Grupo, r.Loja].some(vv => (vv || '').toString().toLowerCase().includes(q));
 
-        return grupoOk && giroOk && codOk && descOk && lojaOk && agingOk && dotacaoOk && acima500Ok && qOk;
+        return grupoOk && giroOk && codOk && descOk && lojaOk && agingOk && dotacaoOk && acima500Ok && reservaOk && qOk;
     });
     renderKpiGroups();
     renderTable(sortRows([...filtered]));
