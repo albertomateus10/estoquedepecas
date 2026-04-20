@@ -196,7 +196,7 @@ const DOTACAO_CODES = [
 
 let allData = [];
 let filtered = [];
-const state = { search: '', Grupo: [], Giro: [], CodItem: [], Descricao: [], Aging: [], Loja: [], Dotacao: [] };
+const state = { search: '', Grupo: [], Giro: [], CodItem: [], Descricao: [], Aging: [], Loja: [], Dotacao: [], Acima500: [] };
 const sortState = { key: 'Quantidade', type: 'num', dir: 'desc' };
 let charts = { periodo: null, valorItem: null, loja: null, aging: null };
 
@@ -305,10 +305,11 @@ const pillInstances = {
     Aging: new MultiPill({ label: 'Dias de Estoque', getter: () => state.Aging, setter: v => state.Aging = v }),
     Loja: new MultiPill({ label: 'Empresa', getter: () => state.Loja, setter: v => state.Loja = v }),
     Dotacao: new MultiPill({ label: 'Dotação', getter: () => state.Dotacao, setter: v => state.Dotacao = v }),
+    Acima500: new MultiPill({ label: 'Acima de R$ 500', getter: () => state.Acima500, setter: v => state.Acima500 = v }),
 };
 (function mountPills() {
     const holder = document.getElementById('filters');
-    ['Loja', 'CodItem', 'Grupo', 'Descricao', 'Dotacao', 'Aging'].forEach(k => {
+    ['Loja', 'CodItem', 'Grupo', 'Descricao', 'Dotacao', 'Acima500', 'Aging'].forEach(k => {
         if (pillInstances[k]) holder.appendChild(pillInstances[k].el);
     });
 })();
@@ -408,7 +409,9 @@ function parseRows(headers, data) {
         ultimaVenda: getIdx(['Última Venda', 'Data Última Venda'], 18), // S
         loja: getIdx(['Nome da Empresa', 'Empresa', 'Loja'], 11), // L
         ultimaCompra: getIdx(['Data da compra da peça', 'Última Compra'], 17), // R
-        grupo: getIdx(['Grupo'], 19) // T
+        grupo: getIdx(['Grupo'], 19), // T
+        colunaK: 10 // K
+
     };
 
     allData = data.filter(r => r.length > 0).map(r => {
@@ -437,7 +440,8 @@ function parseRows(headers, data) {
             UltimaCompra: fmtDate(get(idx.ultimaCompra)),
             UltimaCompraDate: parseDateBR(get(idx.ultimaCompra)),
             Grupo: get(idx.grupo) ?? 'Outros',
-            Loja: get(idx.loja) ?? 'Não informada'
+            Loja: get(idx.loja) ?? 'Não informada',
+            ValorK: toNumberBR(get(idx.colunaK))
         };
     });
 
@@ -454,6 +458,7 @@ function parseRows(headers, data) {
         'de 0 a 90 dias', 'de 91 a 180 dias', 'de 181 a 365 dias', 'de 366 a 1000 dias', 'acima de 1000 dias'
     ], { keepOrder: true });
     pillInstances.Dotacao.setOptions(['Sim', 'Não'], { keepOrder: true });
+    pillInstances.Acima500.setOptions(['Sim', 'Não'], { keepOrder: true });
 
     applyFilters();
 }
@@ -463,7 +468,7 @@ document.getElementById('q').addEventListener('input', e => { state.search = e.t
 document.getElementById('clearAll').addEventListener('click', () => {
     withStableScroll(() => {
         state.search = ''; document.getElementById('q').value = '';
-        state.Grupo = []; state.Giro = []; state.CodItem = []; state.Descricao = []; state.Loja = []; state.Aging = []; state.Dotacao = [];
+        state.Grupo = []; state.Giro = []; state.CodItem = []; state.Descricao = []; state.Loja = []; state.Aging = []; state.Dotacao = []; state.Acima500 = [];
         Object.values(pillInstances).forEach(p => { p.setter([]); p.render(); p.sync(); });
         applyFilters();
     });
@@ -516,10 +521,17 @@ function applyFilters() {
             if (state.Dotacao.includes("Não") && isDotacao) dotacaoOk = false;
         }
 
+        let acima500Ok = true;
+        if (state.Acima500.length === 1) {
+            const isAcima = (r.ValorK > 500);
+            if (state.Acima500.includes("Sim") && !isAcima) acima500Ok = false;
+            if (state.Acima500.includes("Não") && isAcima) acima500Ok = false;
+        }
+
         const q = state.search;
         const qOk = !q || [r.Descricao, r.CodItem, r.Grupo, r.Loja].some(vv => (vv || '').toString().toLowerCase().includes(q));
 
-        return grupoOk && giroOk && codOk && descOk && lojaOk && agingOk && dotacaoOk && qOk;
+        return grupoOk && giroOk && codOk && descOk && lojaOk && agingOk && dotacaoOk && acima500Ok && qOk;
     });
     renderKpiGroups();
     renderTable(sortRows([...filtered]));
