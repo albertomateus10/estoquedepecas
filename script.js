@@ -365,9 +365,9 @@ function processWorkbook(wb) {
 
     console.log('Dados lidos (matriz):', mat.slice(0, 5)); // Log para debug
 
-    // Detecta se a primeira linha parece ser um cabeçalho ou dado direto
+    // Detecta se a linha parece ser um cabeçalho ou dado direto (pulando as 2 primeiras linhas de sistema)
     let headerIdx = -1;
-    for (let i = 0; i < Math.min(5, mat.length); i++) {
+    for (let i = 2; i < Math.min(10, mat.length); i++) {
         const row = mat[i];
         // Se a linha tem textos como "Código", "Descrição", "Item", assumimos que é cabeçalho
         const rowStr = JSON.stringify(row).toLowerCase();
@@ -384,9 +384,9 @@ function processWorkbook(wb) {
         headers = mat[headerIdx].map(h => String(h || '').trim());
         dataRows = mat.slice(headerIdx + 1);
     } else {
-        // Se não detectou cabeçalho, assume que os dados começam na linha 0
+        // Se não detectou cabeçalho, assume que os dados começam na linha 3 (índice 2)
         headers = [];
-        dataRows = mat;
+        dataRows = mat.slice(2);
     }
 
     parseRows(headers, dataRows);
