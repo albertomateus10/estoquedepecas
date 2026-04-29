@@ -196,7 +196,7 @@ const DOTACAO_CODES = [
 
 let allData = [];
 let filtered = [];
-const state = { search: '', Grupo: [], Giro: [], CodItem: [], Descricao: [], Aging: [], Loja: [], Dotacao: [], Acima500: [], Reserva: [] };
+const state = { search: '', Grupo: [], Giro: [], CodItem: [], Descricao: [], Aging: [], Loja: [], Dotacao: [], FaixaPreco: [], Reserva: [] };
 const sortState = { key: 'Quantidade', type: 'num', dir: 'desc' };
 let charts = { periodo: null, valorItem: null, loja: null, aging: null };
 
@@ -305,12 +305,12 @@ const pillInstances = {
     Aging: new MultiPill({ label: 'Dias de Estoque', getter: () => state.Aging, setter: v => state.Aging = v }),
     Loja: new MultiPill({ label: 'Empresa', getter: () => state.Loja, setter: v => state.Loja = v }),
     Dotacao: new MultiPill({ label: 'Dotação', getter: () => state.Dotacao, setter: v => state.Dotacao = v }),
-    Acima500: new MultiPill({ label: 'Acima de R$ 500', getter: () => state.Acima500, setter: v => state.Acima500 = v }),
+    FaixaPreco: new MultiPill({ label: 'Faixa de Preço', getter: () => state.FaixaPreco, setter: v => state.FaixaPreco = v }),
     Reserva: new MultiPill({ label: 'Reserva', getter: () => state.Reserva, setter: v => state.Reserva = v }),
 };
 (function mountPills() {
     const holder = document.getElementById('filters');
-    ['Loja', 'CodItem', 'Grupo', 'Descricao', 'Dotacao', 'Acima500', 'Reserva', 'Aging'].forEach(k => {
+    ['Loja', 'CodItem', 'Grupo', 'Descricao', 'Dotacao', 'FaixaPreco', 'Reserva', 'Aging'].forEach(k => {
         if (pillInstances[k]) holder.appendChild(pillInstances[k].el);
     });
 })();
@@ -460,7 +460,7 @@ function parseRows(headers, data) {
         'de 0 a 90 dias', 'de 91 a 180 dias', 'de 181 a 365 dias', 'de 366 a 1000 dias', 'acima de 1000 dias'
     ], { keepOrder: true });
     pillInstances.Dotacao.setOptions(['Sim', 'Não'], { keepOrder: true });
-    pillInstances.Acima500.setOptions(['Sim', 'Não'], { keepOrder: true });
+    pillInstances.FaixaPreco.setOptions(['de R$ 0,01 até R$ 0,99', 'de R$ 1,00 até 499,99', 'de R$ 500,00 para cima'], { keepOrder: true });
     pillInstances.Reserva.setOptions(['Sim', 'Não'], { keepOrder: true });
 
     applyFilters();
@@ -471,7 +471,7 @@ document.getElementById('q').addEventListener('input', e => { state.search = e.t
 document.getElementById('clearAll').addEventListener('click', () => {
     withStableScroll(() => {
         state.search = ''; document.getElementById('q').value = '';
-        state.Grupo = []; state.Giro = []; state.CodItem = []; state.Descricao = []; state.Loja = []; state.Aging = []; state.Dotacao = []; state.Acima500 = []; state.Reserva = [];
+        state.Grupo = []; state.Giro = []; state.CodItem = []; state.Descricao = []; state.Loja = []; state.Aging = []; state.Dotacao = []; state.FaixaPreco = []; state.Reserva = [];
         Object.values(pillInstances).forEach(p => { p.setter([]); p.render(); p.sync(); });
         applyFilters();
     });
@@ -524,11 +524,14 @@ function applyFilters() {
             if (state.Dotacao.includes("Não") && isDotacao) dotacaoOk = false;
         }
 
-        let acima500Ok = true;
-        if (state.Acima500.length === 1) {
-            const isAcima = (r.ValorK > 500);
-            if (state.Acima500.includes("Sim") && !isAcima) acima500Ok = false;
-            if (state.Acima500.includes("Não") && isAcima) acima500Ok = false;
+        let faixaPrecoOk = true;
+        if (state.FaixaPreco.length > 0) {
+            faixaPrecoOk = state.FaixaPreco.some(f => {
+                if (f === 'de R$ 0,01 até R$ 0,99') return r.ValorK >= 0.01 && r.ValorK <= 0.99;
+                if (f === 'de R$ 1,00 até 499,99') return r.ValorK >= 1.00 && r.ValorK <= 499.99;
+                if (f === 'de R$ 500,00 para cima') return r.ValorK >= 500.00;
+                return false;
+            });
         }
 
         let reservaOk = true;
@@ -541,7 +544,7 @@ function applyFilters() {
         const q = state.search;
         const qOk = !q || [r.Descricao, r.CodItem, r.Grupo, r.Loja].some(vv => (vv || '').toString().toLowerCase().includes(q));
 
-        return grupoOk && giroOk && codOk && descOk && lojaOk && agingOk && dotacaoOk && acima500Ok && reservaOk && qOk;
+        return grupoOk && giroOk && codOk && descOk && lojaOk && agingOk && dotacaoOk && faixaPrecoOk && reservaOk && qOk;
     });
     renderKpiGroups();
     renderTable(sortRows([...filtered]));
