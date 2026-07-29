@@ -460,7 +460,7 @@ function parseRows(headers, data) {
         'de 0 a 90 dias', 'de 91 a 180 dias', 'de 181 a 365 dias', 'de 366 a 1000 dias', 'acima de 1000 dias'
     ], { keepOrder: true });
     pillInstances.Dotacao.setOptions(['Sim', 'Não'], { keepOrder: true });
-    pillInstances.FaixaPreco.setOptions(['de R$ 0,01 até R$ 0,99', 'de R$ 1,00 até 499,99', 'de R$ 500,00 para cima'], { keepOrder: true });
+    pillInstances.FaixaPreco.setOptions(['de R$ 0,01 até R$ 1,01', 'de R$ 1,02 até R$ 499,00', 'de R$ 500,00 para cima'], { keepOrder: true });
     pillInstances.Reserva.setOptions(['Sim', 'Não'], { keepOrder: true });
 
     applyFilters();
@@ -527,8 +527,8 @@ function applyFilters() {
         let faixaPrecoOk = true;
         if (state.FaixaPreco.length > 0) {
             faixaPrecoOk = state.FaixaPreco.some(f => {
-                if (f === 'de R$ 0,01 até R$ 0,99') return r.ValorK >= 0.01 && r.ValorK <= 0.99;
-                if (f === 'de R$ 1,00 até 499,99') return r.ValorK >= 1.00 && r.ValorK <= 499.99;
+                if (f === 'de R$ 0,01 até R$ 1,01') return r.ValorK >= 0.01 && r.ValorK <= 1.01;
+                if (f === 'de R$ 1,02 até R$ 499,00') return r.ValorK >= 1.02 && r.ValorK <= 499.00;
                 if (f === 'de R$ 500,00 para cima') return r.ValorK >= 500.00;
                 return false;
             });
