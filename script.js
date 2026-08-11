@@ -723,11 +723,11 @@ function renderCharts(rows) {
                     anchor: 'end',
                     align: 'top',
                     color: '#333',
-                    textAlign: 'center',
                     font: { weight: 'bold', size: 10 },
                     formatter: (v, ctx) => {
-                        const grupo = groupsSorted[ctx.dataIndex];
-                        return `${NUM(v)}\n${BRL(grupo[1].custo)}`;
+                        const totalQtd = groupsSorted.reduce((a, b) => a + b[1].qtd, 0) || 1;
+                        const pct = ((v / totalQtd) * 100).toFixed(1).replace('.', ',');
+                        return `${NUM(v)} (${pct}%)`;
                     }
                 }
             } 
@@ -771,7 +771,10 @@ function renderCharts(rows) {
                     align: 'right',
                     color: '#444',
                     font: { weight: 'bold', size: 10 },
-                    formatter: (v) => BRL(v)
+                    formatter: (v) => {
+                        const pct = ((v / totalCustoLojas) * 100).toFixed(1).replace('.', ',');
+                        return `${BRL(v)} (${pct}%)`;
+                    }
                 }
             },
             layout: { padding: { right: 70 } }
@@ -807,12 +810,13 @@ function renderCharts(rows) {
                 title: { display: true, text: 'Top 10 Itens por Valor Total' }, 
                 datalabels: { 
                     anchor: 'end',
-                    align: 'start',
-                    color: '#fff',
+                    align: 'right',
+                    color: '#444',
                     font: { weight: 'bold', size: 10 },
                     formatter: (v, ctx) => {
-                        const item = itemValues[ctx.dataIndex];
-                        return `${BRL(v)} (Qtd: ${NUM(item.qtd)})`;
+                        const totalValor = itemValues.reduce((a, b) => a + b.valor, 0) || 1;
+                        const pct = ((v / totalValor) * 100).toFixed(1).replace('.', ',');
+                        return `${BRL(v)} (${pct}%)`;
                     }
                 },
                 tooltip: {
@@ -902,7 +906,11 @@ function renderCharts(rows) {
                     color: '#475569',
                     offset: 8,
                     font: { weight: 'bold', size: 11 },
-                    formatter: v => v > 0 ? BRL(v) : ''
+                    formatter: v => {
+                        if (v <= 0) return '';
+                        const pct = ((v / totalCustoAging) * 100).toFixed(1).replace('.', ',');
+                        return `${BRL(v)} (${pct}%)`;
+                    }
                 }
             },
             layout: {
