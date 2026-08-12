@@ -730,7 +730,8 @@ function renderCharts(rows) {
                         return `${NUM(v)} (${pct}%)`;
                     }
                 }
-            } 
+            },
+            layout: { padding: { top: 30 } }
         }
     });
 
@@ -777,7 +778,7 @@ function renderCharts(rows) {
                     }
                 }
             },
-            layout: { padding: { right: 70 } }
+            layout: { padding: { right: 160 } }
         }
     });
 
@@ -831,7 +832,8 @@ function renderCharts(rows) {
                         }
                     }
                 } 
-            } 
+            },
+            layout: { padding: { right: 160 } }
         }
     });
 
@@ -914,7 +916,7 @@ function renderCharts(rows) {
                 }
             },
             layout: {
-                padding: { right: 80, left: 10 }
+                padding: { right: 160, left: 10 }
             }
         }
     });
